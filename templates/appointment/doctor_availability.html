@@ -1,0 +1,22 @@
+{% if time_slots|length == 0 %}
+<h6>No time slots available fot this date.</h6>
+> {% else %}
+<h6>Available time slots.</h6>
+{% endif %}
+<div>
+  {% for time_slot in time_slots %}
+  <div class="custom-control custom-radio">
+    <!-- <input name="time-slot" class="radioinput form-control" type="radio" value="{{ time_slot.pk }}">{{ time_slot }}</input> -->
+    <input
+      type="radio"
+      id="customRadio{{ time_slot.pk }}"
+      name="customRadio"
+      class="custom-control-input"
+      value="{{ time_slot.pk }}"
+    />
+    <label class="custom-control-label" for="customRadio{{ time_slot.pk }}">
+      {{ time_slot.available_from }}-{{ time_slot.available_to }}
+    </label>
+  </div>
+  {% endfor %}
+</div>

@@ -1,0 +1,67 @@
+{% extends 'partials/base.html' %} {% load crispy_forms_tags %} {% block main %}
+<div class="card">
+  <div class="card-body">
+    <h4 class="card-title">Book your appointment</h4>
+
+    <form
+      method="post"
+      id="appointmentForm"
+      data-doctors-url="{% url 'ajax_load_doctors' %}"
+      data-timeslots-url="{% url 'ajax_load_timeslots' %}"
+    >
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{{ next }}" />
+
+      {{ form | crispy }}
+      <div id="time_slots" class="form-group"></div>
+
+      <button type="submit" class="btn btn-primary btn-block">Log in</button>
+    </form>
+  </div>
+</div>
+<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+<script>
+  var date;
+  var time_slot;
+  $('#id_appointment_date').change(function() {
+    date = $(this).val();
+  });
+
+  $('#id_department').change(function() {
+    var url = $('#appointmentForm').attr('data-doctors-url'); // get the url of the `load_doctors` view
+    var departmentId = $(this).val(); // get the selected department ID from the HTML input
+
+    $.ajax({
+      // initialize an AJAX request
+      url: url, // set the url of the request (= localhost:8000/appointment/ajax/load-doctor/)
+      data: {
+        department: departmentId // add the country id to the GET parameters
+      },
+      success: function(data) {
+        console.log('DEPARTMRNT:  ' + url);
+        // `data` is the return of the `load_cities` view function
+        $('#id_doctor').html(data); // replace the contents of the city input with the data that came from the server
+      }
+    });
+  });
+
+  $('#id_doctor').change(function() {
+    var url = $('#appointmentForm').attr('data-timeslots-url'); // get the url of the `load_doctors` view
+    var doctorId = $(this).val(); // get the selected department ID from the HTML input
+
+    $.ajax({
+      // initialize an AJAX request
+      url: url, // set the url of the request (= localhost:8000/appointment/ajax/load-doctor/)
+      data: {
+        date: date,
+        doctor: doctorId // add the country id to the GET parameters
+      },
+      success: function(data) {
+        // `data` is the return of the `load_cities` view function
+        console.log('>>>>cess' + data);
+        $('#time_slots').html(data); // replace the contents of the city input with the data that came from the server
+      }
+    });
+  });
+</script>
+{% endblock %}
