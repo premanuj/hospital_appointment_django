@@ -12,7 +12,6 @@ class TimeSlotInline(admin.TabularInline):
 @admin.register(Appointment)
 class AppointmentAdmin(admin.ModelAdmin):
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
-        print("here: ", db_field.name)
         if db_field.name == "doctor":
             kwargs["queryset"] = Doctor.objects.all()
         return super().formfield_for_foreignkey(db_field, request, **kwargs)

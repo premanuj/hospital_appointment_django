@@ -5,6 +5,7 @@ from apps.hospital.models import Department
 from apps.appointment.models import Appointment, TimeSlot, Availablity
 from django.urls import reverse_lazy
 from apps.appointment.forms import AppointmentForm
+from django.contrib import messages
 
 # Create your views here.
 class AppointmentListView(ListView):
@@ -18,6 +19,15 @@ class AppointmentCreateView(CreateView):
     form_class = AppointmentForm
     template_name = "appointment/appointment_create.html"
     success_url = reverse_lazy("create-appointment")
+
+    def form_invalid(self, form):
+        messages.error(self.request, "Something went wrong.")
+        return super().form_invalid(form)
+
+    def form_valid(self, form):
+        data = form.cleaned_data
+        Appointment.objects.create(**data)
+        return super().form_valid(form)
 
 
 class AppointmentUpdateView(UpdateView):
@@ -37,22 +47,10 @@ def load_doctors(request):
 def load_time_slots(requests):
     date = requests.GET.get("date")
     doctor_id = requests.GET.get("doctor")
-
-    # availablities = Availablity.objects.filter(
-    #     doctor_id=doctor_id, date=date, availabletime__status=True
-    # ).prefetch_related()
-
-    availablities = Availablity.objects.filter(
-        doctor_id=doctor_id, date=date, available_time__status=True
-    )
     time_slots = TimeSlot.objects.filter(
         available_time__availablity__doctor=doctor_id,
         available_time__availablity__date=date,
         available_time__status=True,
     )
-    # time_slots = [
-    #     aval
-    #     for availiblity in availablities
-    #     for aval in availiblity.time_slot.filter(availablity=availiblity.id)
-    # ]
+
     return render(requests, "appointment/doctor_availability.html", {"time_slots": time_slots})

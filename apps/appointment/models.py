@@ -35,9 +35,8 @@ class Appointment(models.Model):
     STATUS_CODES = ((CONFIRMED, "Confirmed"), (CANCELLED, "Cancelled"), (WAITING, "Waiting"))
     appointment_date = models.DateField()
     time_slot_from = models.TimeField()
-    token_no = models.IntegerField()
-    status = models.PositiveSmallIntegerField(choices=STATUS_CODES)
-    patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
+    status = models.PositiveSmallIntegerField(choices=STATUS_CODES, null=True, default=WAITING)
+    patient = models.ForeignKey(Patient, on_delete=models.CASCADE, null=True)
     department = models.ForeignKey(Department, on_delete=models.CASCADE)
     doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE)
 
@@ -65,7 +64,7 @@ class Availablity(models.Model):
         return f"Date: {self.date}"
 
     class Meta:
-        verbose_name_plural = "availablilities"
+        verbose_name_plural = "availablities"
 
 
 class AvailableTime(models.Model):

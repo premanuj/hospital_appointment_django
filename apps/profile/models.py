@@ -29,7 +29,6 @@ class Contact(models.Model):
     contact_no = models.IntegerField(unique=True)
 
     def __str__(self):
-        print(self.contact_no)
         return self.user.username
 
     # def save(self, *args, **kwargs):

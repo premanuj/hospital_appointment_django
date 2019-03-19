@@ -1,25 +1,38 @@
 from django import forms
 from apps.profile.models import Doctor, Department
-from apps.appointment.models import Appointment
+from apps.appointment.models import Appointment, AvailableTime
+
+from django.db import transaction
 
 
 class AppointmentForm(forms.ModelForm):
+    time_slot_from = forms.TimeField(widget=forms.TimeInput(format="%H:%M"))
+
     class Meta:
         model = Appointment
         fields = ("appointment_date", "time_slot_from", "department", "doctor")
 
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields["doctor"].queryset = Doctor.objects.none()
+        super(AppointmentForm, self).__init__(*args, **kwargs)
+        self.fields["time_slot_from"].widget.attrs["class"] = "clockpicker"
 
-        if "appointment" in self.data:
+        self.fields["doctor"].queryset = Doctor.objects.none()
+        if "department" in self.data:
             try:
-                appointment_id = int(self.data.get("appointment"))
-                self.fields["city"].queryset = Doctor.objects.filter(
-                    appointment=appointment_id
+                department_id = int(self.data.get("department"))
+                self.fields["doctor"].queryset = Doctor.objects.filter(
+                    department=department_id
                 ).order_by("user")
             except (ValueError, TypeError):
                 pass  # invalid input from the client; ignore and fallback to empty City queryset
         elif self.instance.pk:
-            self.fields["city"].queryset = self.instance.country.city_set.order_by("name")
+            self.fields["doctor"].queryset = self.instance.department.doctor_set
+
+    @transaction.atomic
+    def save(self, commit=True):
+        available_timeslot_id = self.data.get("available_timeslot_id")
+        available_timeslot = AvailableTime.objects.get(pk=available_timeslot_id)
+        available_timeslot.status = False
+        available_timeslot.save()
+        return available_timeslot
 
