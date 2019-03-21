@@ -1,6 +1,7 @@
-from .models import User
 from django.views import View
 from .forms import SignUpForm
+from .models import User, Doctor
+from django.views.generic import ListView
 from django.shortcuts import render, redirect
 from django.views.generic.base import RedirectView
 from django.template.loader import render_to_string
@@ -9,6 +10,9 @@ from django.utils.encoding import force_bytes, force_text
 from django.contrib.sites.shortcuts import get_current_site
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
+from django.db.models.functions import Cast
+from django.db.models import CharField
 
 
 class UserSignUp(View):
@@ -64,3 +68,27 @@ def user_activate(request, uidb64, token):
         return redirect("/")
     return render(request, "profile/account_activation_invalid.html")
 
+
+class DoctorSearchListView(ListView):
+    """
+    Display a Blog List page filtered by the search query.
+    """
+
+    model = Doctor
+    paginate_by = 10
+    template_name = "profile/search.html"
+    context_object_name = "searches"
+
+    def get_queryset(self):
+        qs = Doctor.objects.all()
+
+        keywords = self.request.GET.get("q")
+        if keywords:
+            query = SearchQuery(keywords)
+            name_vector = SearchVector("user__username", weight="A")
+            department_vector = SearchVector("department__department_name", weight="B")
+            vectors = name_vector + department_vector
+            qs = qs.annotate(search=vectors).filter(search=query)
+            qs = qs.annotate(rank=SearchRank(vectors, query)).order_by("education")
+
+        return qs

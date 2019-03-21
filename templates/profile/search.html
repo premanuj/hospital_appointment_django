@@ -1,0 +1,34 @@
+{% extends 'partials/base.html' %} {% load crispy_forms_tags %} {% block main %}
+<div class="card">
+  <div class="card-body">
+    <h4 class="card-title">Log in to your account</h4>
+
+    <form method="get" action="{% url 'search' %}">
+      Search
+      <input
+        type="text"
+        name="q"
+        value="{{ request.GET.q }}"
+        placeholder="Search"
+      />
+      <button type="submit" class="btn btn-primary btn-block">Search</button>
+    </form>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-body">
+    <h4 class="card-title">Search Results</h4>
+
+    {% if searches|length == 0 %}
+    <h6>No record found</h6>
+    {% else %}
+    <!-- list search result -->
+    {% for search in searches %} here
+    {{ search.education }}
+    {% endfor %}
+    <!-- endif  -->
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

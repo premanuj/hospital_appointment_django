@@ -21,8 +21,15 @@ class AppointmentAdmin(admin.ModelAdmin):
 
 
 @admin.register(Availablity)
-class Availability(admin.ModelAdmin):
+class AvailabilityAdmin(admin.ModelAdmin):
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        print("Name: ", db_field.name)
+        if db_field.name == "doctor":
+            kwargs["queryset"] = Doctor.objects.all()
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
     inlines = [TimeSlotInline]
+    list_display = ["date", "doctor"]
 
 
 admin.site.register(TimeSlot)

@@ -1,11 +1,18 @@
 from django.shortcuts import render
 from django.views.generic import CreateView, UpdateView, ListView
-from apps.profile.models import Doctor
+from apps.profile.models import Doctor, User, Patient
 from apps.hospital.models import Department
-from apps.appointment.models import Appointment, TimeSlot, Availablity
+from apps.appointment.models import Appointment, TimeSlot, Availablity, AvailableTime
 from django.urls import reverse_lazy
 from apps.appointment.forms import AppointmentForm
 from django.contrib import messages
+from django.db import transaction
+from django.contrib.auth.mixins import (
+    LoginRequiredMixin,
+    PermissionRequiredMixin,
+    UserPassesTestMixin,
+)
+
 
 # Create your views here.
 class AppointmentListView(ListView):
@@ -14,18 +21,40 @@ class AppointmentListView(ListView):
     context_object_name = "appointment_list"
 
 
-class AppointmentCreateView(CreateView):
+class AppointmentCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
+    login_url = "/users/login/"
+    # redirect_field_name = "create-appointment"
+    # permission_required = "profile.is_patient"
+    permission_denied_message = "You have no permission to view this page."
+
     model = Appointment
     form_class = AppointmentForm
     template_name = "appointment/appointment_create.html"
     success_url = reverse_lazy("create-appointment")
 
+    def test_func(self):
+        return self.request.user.is_patient()
+
     def form_invalid(self, form):
         messages.error(self.request, "Something went wrong.")
         return super().form_invalid(form)
 
+    @transaction.atomic
     def form_valid(self, form):
+        print("permission", self.permission_required)
+        print(self.request.user)
+        print(self.request.user.is_patient())
+        # user = User.objects.get(username=self.request.user.username)
+        # patient = Patient.objects.filter(user=user)
+        # if not patient:
+        #     messages.error(self.request, "Not authorized patient.")
+        #     return super().form_valid(form)
+        available_timeslot_id = form.data.get("available_timeslot_id")
+        available_timeslot = AvailableTime.objects.get(pk=available_timeslot_id)
+        available_timeslot.status = False
+        available_timeslot.save()
         data = form.cleaned_data
+        print(data)
         Appointment.objects.create(**data)
         return super().form_valid(form)
 

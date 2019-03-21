@@ -18,6 +18,12 @@ class User(AbstractUser):
     def __str__(self):
         return self.username
 
+    def is_doctor(self):
+        return self.role == self.DOCTOR
+
+    def is_patient(self):
+        return self.role == self.PATIENT
+
     class Meta:
         verbose_name_plural = "Users"
 

@@ -1,10 +1,11 @@
 from django.urls import path, re_path
 from django.contrib.auth import views
-from .views import UserSignUp, UserAccountActivationSent, user_activate
+from .views import UserSignUp, UserAccountActivationSent, user_activate, DoctorSearchListView
 
 
 urlpatterns = [
     path("register/", UserSignUp.as_view(), name="register"),
+    path("search/", DoctorSearchListView.as_view(), name="search"),
     path("login/", views.LoginView.as_view(template_name="profile/login.html"), name="login"),
     path("logout/", views.LogoutView.as_view(template_name="profile/logout.html"), name="logout"),
     path(
@@ -24,6 +25,14 @@ urlpatterns = [
         name="password_reset_confirm",
     ),
     path("reset/done/", views.PasswordResetCompleteView.as_view(), name="password_reset_complete"),
-    path("account-activation-sent/", UserAccountActivationSent.as_view(), name="account_activation_sent"),
-    re_path(r'^account-activation/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$', user_activate, name="account-activation"),
+    path(
+        "account-activation-sent/",
+        UserAccountActivationSent.as_view(),
+        name="account_activation_sent",
+    ),
+    re_path(
+        r"^account-activation/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$",
+        user_activate,
+        name="account-activation",
+    ),
 ]

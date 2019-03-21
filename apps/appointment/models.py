@@ -34,7 +34,6 @@ class Appointment(models.Model):
     WAITING = 3
     STATUS_CODES = ((CONFIRMED, "Confirmed"), (CANCELLED, "Cancelled"), (WAITING, "Waiting"))
     appointment_date = models.DateField()
-    time_slot_from = models.TimeField()
     status = models.PositiveSmallIntegerField(choices=STATUS_CODES, null=True, default=WAITING)
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE, null=True)
     department = models.ForeignKey(Department, on_delete=models.CASCADE)

@@ -16,7 +16,9 @@
       data-doctors-url="{% url 'ajax_load_doctors' %}"
       data-timeslots-url="{% url 'ajax_load_timeslots' %}"
     >
-      {% csrf_token %}
+      {% if messages %} {% for message in messages %}
+      {{ message }}
+      {% endfor %} {% endif %} {% csrf_token %}
       <input type="hidden" name="next" value="{{ next }}" />
 
       {{ form | crispy }}

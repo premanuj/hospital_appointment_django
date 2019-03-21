@@ -6,15 +6,14 @@ from django.db import transaction
 
 
 class AppointmentForm(forms.ModelForm):
-    time_slot_from = forms.TimeField(widget=forms.TimeInput(format="%H:%M"))
-
     class Meta:
         model = Appointment
-        fields = ("appointment_date", "time_slot_from", "department", "doctor")
+        fields = ("appointment_date", "department", "doctor")
 
     def __init__(self, *args, **kwargs):
         super(AppointmentForm, self).__init__(*args, **kwargs)
-        self.fields["time_slot_from"].widget.attrs["class"] = "clockpicker"
+        # self.fields["time_slot_from"].widget.attrs["class"] = "clockpicker"
+        print("FIELDS: ", self.fields)
 
         self.fields["doctor"].queryset = Doctor.objects.none()
         if "department" in self.data:
@@ -28,11 +27,11 @@ class AppointmentForm(forms.ModelForm):
         elif self.instance.pk:
             self.fields["doctor"].queryset = self.instance.department.doctor_set
 
-    @transaction.atomic
-    def save(self, commit=True):
-        available_timeslot_id = self.data.get("available_timeslot_id")
-        available_timeslot = AvailableTime.objects.get(pk=available_timeslot_id)
-        available_timeslot.status = False
-        available_timeslot.save()
-        return available_timeslot
+    # @transaction.atomic
+    # def save(self, commit=True):
+    #     available_timeslot_id = self.data.get("available_timeslot_id")
+    #     available_timeslot = AvailableTime.objects.get(pk=available_timeslot_id)
+    #     available_timeslot.status = False
+    #     available_timeslot.save()
+    #     return available_timeslot
 
