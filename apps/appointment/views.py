@@ -23,8 +23,6 @@ class AppointmentListView(ListView):
 
 class AppointmentCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     login_url = "/users/login/"
-    # redirect_field_name = "create-appointment"
-    # permission_required = "profile.is_patient"
     permission_denied_message = "You have no permission to view this page."
 
     model = Appointment
@@ -41,21 +39,14 @@ class AppointmentCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView)
 
     @transaction.atomic
     def form_valid(self, form):
-        print("permission", self.permission_required)
-        print(self.request.user)
-        print(self.request.user.is_patient())
-        # user = User.objects.get(username=self.request.user.username)
-        # patient = Patient.objects.filter(user=user)
-        # if not patient:
-        #     messages.error(self.request, "Not authorized patient.")
-        #     return super().form_valid(form)
         available_timeslot_id = form.data.get("available_timeslot_id")
         available_timeslot = AvailableTime.objects.get(pk=available_timeslot_id)
         available_timeslot.status = False
         available_timeslot.save()
-        data = form.cleaned_data
-        print(data)
-        Appointment.objects.create(**data)
+        patient = Patient.objects.get(user=self.request.user)
+        form.cleaned_data["patient"] = patient
+        # data.patient = patient
+        # Appointment.objects.create(patient=patient, **data)
         return super().form_valid(form)
 
 
@@ -81,5 +72,4 @@ def load_time_slots(requests):
         available_time__availablity__date=date,
         available_time__status=True,
     )
-
     return render(requests, "appointment/doctor_availability.html", {"time_slots": time_slots})

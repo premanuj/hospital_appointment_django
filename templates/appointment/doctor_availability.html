@@ -12,8 +12,9 @@
       id="customRadio{{ time_slot.pk }}"
       name="available_timeslot_id"
       class="custom-control-input"
-      value="{{ time_slot.pk }}"
+      value="{{ time_slot.available_time.first.id }}"
     />
+
     <label class="custom-control-label" for="customRadio{{ time_slot.pk }}">
       {{ time_slot.available_from }}-{{ time_slot.available_to }}
     </label>

@@ -37,10 +37,6 @@ class Contact(models.Model):
     def __str__(self):
         return self.user.username
 
-    # def save(self, *args, **kwargs):
-    #     self.category = self.hero.category
-    #     super().save(*args, **kwargs)
-
 
 class Doctor(models.Model):
     user = models.OneToOneField(

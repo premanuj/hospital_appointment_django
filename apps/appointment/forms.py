@@ -13,8 +13,6 @@ class AppointmentForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(AppointmentForm, self).__init__(*args, **kwargs)
         # self.fields["time_slot_from"].widget.attrs["class"] = "clockpicker"
-        print("FIELDS: ", self.fields)
-
         self.fields["doctor"].queryset = Doctor.objects.none()
         if "department" in self.data:
             try:
