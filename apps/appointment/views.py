@@ -13,6 +13,7 @@ from django.contrib.auth.mixins import (
     UserPassesTestMixin,
 )
 
+from notifications.signals import notify
 
 # Create your views here.
 class AppointmentListView(ListView):
@@ -40,13 +41,16 @@ class AppointmentCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView)
     @transaction.atomic
     def form_valid(self, form):
         available_timeslot_id = form.data.get("available_timeslot_id")
+        doctor_id = form.data.get("doctor")
         available_timeslot = AvailableTime.objects.get(pk=available_timeslot_id)
         available_timeslot.status = False
         available_timeslot.save()
         patient = Patient.objects.get(user=self.request.user)
         form.cleaned_data["patient"] = patient
-        # data.patient = patient
-        # Appointment.objects.create(patient=patient, **data)
+        print("DOCTOR:", form.data)
+        doctor = Doctor.objects.get(user=doctor_id)
+        user = User.objects.get(pk=doctor.user.id)
+        notify.send(patient, recipient=user, verb="appointment created")
         return super().form_valid(form)
 
 
@@ -67,9 +71,6 @@ def load_doctors(request):
 def load_time_slots(requests):
     date = requests.GET.get("date")
     doctor_id = requests.GET.get("doctor")
-    time_slots = TimeSlot.objects.filter(
-        available_time__availablity__doctor=doctor_id,
-        available_time__availablity__date=date,
-        available_time__status=True,
-    )
-    return render(requests, "appointment/doctor_availability.html", {"time_slots": time_slots})
+    available = Availablity.objects.get(date=date, doctor_id=doctor_id)
+    time_slot = available.available_time.filter(status=True)
+    return render(requests, "appointment/doctor_availability.html", {"time_slots": time_slot})

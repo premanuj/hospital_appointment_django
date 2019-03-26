@@ -1,7 +1,9 @@
 from django.views import View
 from .forms import SignUpForm
 from .models import User, Doctor
+from django.db.models import CharField
 from django.views.generic import ListView
+from django.db.models.functions import Cast
 from django.shortcuts import render, redirect
 from django.views.generic.base import RedirectView
 from django.template.loader import render_to_string
@@ -11,8 +13,6 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
-from django.db.models.functions import Cast
-from django.db.models import CharField
 
 
 class UserSignUp(View):
@@ -80,9 +80,9 @@ class DoctorSearchListView(ListView):
     context_object_name = "searches"
 
     def get_queryset(self):
-        qs = Doctor.objects.all()
 
         keywords = self.request.GET.get("q")
+        qs = Doctor.objects.all() if keywords else Doctor.objects.none()
         if keywords:
             query = SearchQuery(keywords)
             name_vector = SearchVector("user__username", weight="A")
