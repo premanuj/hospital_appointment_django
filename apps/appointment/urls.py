@@ -1,26 +1,32 @@
 from django.urls import path, re_path
-from django.contrib.auth import views
 from .views import (
     AppointmentCreateView,
-    AppointmentListView,
+    AppointmentDoctorListView,
+    AppointmentPatientListView,
     AppointmentUpdateView,
     load_doctors,
     load_time_slots,
+    load_available_date,
 )
 
 
 urlpatterns = [
     path("create/", AppointmentCreateView.as_view(), name="create-appointment"),
     path(
-        "update/",
+        "update/<int:id>/",
         AppointmentUpdateView.as_view(template_name="appointment/appointment_create.html"),
         name="update-appointment",
     ),
     path(
-        "list/",
-        AppointmentListView.as_view(template_name="appointment/appointment_list/logout.html"),
-        name="list-appointment",
+        "update/",
+        AppointmentUpdateView.as_view(template_name="appointment/appointment_create.html"),
+        name="update-appointment",
     ),
+    path("doctor-list/", AppointmentDoctorListView.as_view(), name="list-doctor-appointment"),
+    path("patient-list/", AppointmentPatientListView.as_view(), name="list-patient-appointment"),
     path("ajax/load-doctors/", load_doctors, name="ajax_load_doctors"),  # <-- this one here
     path("ajax/load-time-slots/", load_time_slots, name="ajax_load_timeslots"),  # <-- this one here
+    path(
+        "ajax/load-available-date/", load_available_date, name="ajax_load_available_date"
+    ),  # <-- this one here
 ]

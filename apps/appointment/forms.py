@@ -1,8 +1,10 @@
 from django import forms
-from apps.profile.models import Doctor, Department
+from apps.profile.models import Doctor, Department, Patient
 from apps.appointment.models import Appointment, AvailableTime
 
 from django.db import transaction
+
+from datetime import datetime
 
 
 class AppointmentForm(forms.ModelForm):
@@ -14,6 +16,7 @@ class AppointmentForm(forms.ModelForm):
         super(AppointmentForm, self).__init__(*args, **kwargs)
         # self.fields["time_slot_from"].widget.attrs["class"] = "clockpicker"
         self.fields["doctor"].queryset = Doctor.objects.none()
+        # self.fiekds["patient"].queryset = Patient.objects.get(user=request.user)
         if "department" in self.data:
             try:
                 department_id = int(self.data.get("department"))
@@ -22,14 +25,10 @@ class AppointmentForm(forms.ModelForm):
                 ).order_by("user")
             except (ValueError, TypeError):
                 pass  # invalid input from the client; ignore and fallback to empty City queryset
+
         elif self.instance.pk:
             self.fields["doctor"].queryset = self.instance.department.doctor_set
 
-    # @transaction.atomic
-    # def save(self, commit=True):
-    #     available_timeslot_id = self.data.get("available_timeslot_id")
-    #     available_timeslot = AvailableTime.objects.get(pk=available_timeslot_id)
-    #     available_timeslot.status = False
-    #     available_timeslot.save()
-    #     return available_timeslot
+        if "appointment_date" in self.data:
+            self.fields["appointment_date"].input_formats = ["%B %d, %Y"]
 

@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from .models import User, Doctor, Patient, Contact
 from apps.appointment.models import Availablity
 from django.db import models
@@ -32,22 +33,28 @@ class PatientAdmin(admin.ModelAdmin):
 
 
 @admin.register(User)
-class UserAdmin(admin.ModelAdmin):
-    list_display = ["username", "email"]
-    list_display_links = ["email"]
-    model = User
-    inlines = [ContactInline]
-    exclude = (
-        "last_login",
-        "groups",
-        "user_permissions",
-        "is_active",
-        "is_staff",
-        "date_joined",
-        "is_superuser",
+class UserAdmin(BaseUserAdmin):
+    list_display = ("username", "email", "date_of_birth", "is_admin")
+    list_filter = ("is_admin",)
+    fieldsets = (
+        (None, {"fields": ("email", "password")}),
+        ("Personal info", {"fields": ("date_of_birth", "first_name", "last_name", "gender")}),
+        ("Permissions", {"fields": ("is_admin",)}),
     )
-    list_filter = ["username", "email"]
-    search_fields = ["username"]
+    # add_fieldsets is not a standard ModelAdmin attribute. UserAdmin
+    # overrides get_fieldsets to use this attribute when creating a user.
+    add_fieldsets = (
+        (
+            None,
+            {
+                "classes": ("wide",),
+                "fields": ("username", "email", "password1", "password2", "role"),
+            },
+        ),
+    )
+    search_fields = ("email", "username")
+    ordering = ("email",)
+    filter_horizontal = ()
 
 
 # admin.site.register(Availablity)

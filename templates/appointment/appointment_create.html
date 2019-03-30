@@ -4,8 +4,6 @@
 
 <!-- load crispy tag -->
 {% load crispy_forms_tags %}
-<!-- header block -->
-{% block header %} {% include "appointment/notification.html" %} {% endblock %}
 <!-- main block  -->
 {% block main %}
 <div class="card">
@@ -15,6 +13,7 @@
     <form
       method="post"
       id="appointmentForm"
+      data-available-date-url="{% url 'ajax_load_available_date' %}"
       data-doctors-url="{% url 'ajax_load_doctors' %}"
       data-timeslots-url="{% url 'ajax_load_timeslots' %}"
     >
@@ -26,20 +25,24 @@
       {{ form | crispy }}
       <div id="time_slots" class="form-group"></div>
 
-      <button type="submit" class="btn btn-primary btn-block">Log in</button>
+      <button type="submit" class="btn btn-primary btn-block">Book</button>
     </form>
   </div>
 </div>
 <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
-<script src="{%static 'js/jquery.ptTimeSelect.js' %}"></script>
 
 <script>
-  $('.clockpicker').ptTimeSelect(); //end ptTimeSelect()
+  $(function() {
+    var url = $('#appointmentForm').attr('data-available-date-url');
 
-  var date;
-  var time_slot;
-  $('#id_appointment_date').change(function() {
-    date = $(this).val();
+    $.ajax({
+      // initialize an AJAX request
+      url: url, // set the url of the request (= localhost:8000/appointment/ajax/load-doctor/)
+      success: function(data) {
+        // `data` is the return of the `load_doctors` view function
+        $('#id_appointment_date').replaceWith(data); // replace the contents of the doctors input with the data that came from the server
+      }
+    });
   });
 
   $('#id_department').change(function() {
@@ -67,7 +70,7 @@
       // initialize an AJAX request
       url: url, // set the url of the request (= localhost:8000/appointment/ajax/load-timeslot/)
       data: {
-        date: date,
+        date: $('#id_appointment_date').val(),
         doctor: doctorId // add the doctor id to the GET parameters
       },
       success: function(data) {

@@ -16,6 +16,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 import notifications.urls
+from apps.hospital.views import home
 
 admin.site.site_header = "Appointment Management Admin"
 admin.site.site_title = "Appointment Management Admin Portal"
@@ -23,6 +24,7 @@ admin.site.index_title = "Welcome to Appointment Management Researcher Portal"
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("", home, name="index"),
     path("users/", include("apps.profile.urls")),
     path("appointments/", include("apps.appointment.urls")),
     path("inbox/notifications/", include(notifications.urls, namespace="notifications")),
