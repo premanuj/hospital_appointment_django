@@ -10,7 +10,7 @@
 
 {% block main %}
 <!-- length of appointments -->
-{% if appointment_list|length == 0 %}
+{% if latest_appointment|length == 0 %}
 <li class="list-group-item ">No appointments available</li>
 {% else %}
 <table class="table table-hover">
@@ -26,7 +26,7 @@
   </thead>
   <tbody>
     <!-- for loop  -->
-    {% for appointment in appointment_list %}
+    {% for appointment in latest_appointment %}
     <tr>
       <th scope="row">1</th>
       <td>{{ appointment.appointment_date }}</td>
@@ -80,6 +80,11 @@
 </table>
 {% endif %}
 <!-- end of if-->
+{% endblock %}
+
+{% block rightbar %}
+{% include "appointment/doctor_rightbar.html" %}
+  {% endblock %}
 
 <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
 <script>
@@ -101,5 +106,3 @@
     });
   });
 </script>
-
-{% endblock %}

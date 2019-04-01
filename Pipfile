@@ -10,6 +10,7 @@ django = "==2.1.7"
 psycopg2-binary = "*"
 django-crispy-forms = "*"
 django-notifications-hq = "*"
+django-tempus-dominus = "*"
 
 [requires]
 python_version = "3.6"

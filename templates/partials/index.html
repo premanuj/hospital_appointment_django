@@ -1,14 +1,9 @@
 {% extends 'partials/base.html' %} 
 
-{% block header %}
-<!-- include header file -->
-    {% include "partials/header.html" %} 
-{% endblock %}
-
 {% block main %}
     this is my home page
 {% endblock %}
 
 {% block rightbar %}
-    this is my rightbar
+    {% include "appointment/rightbar.html" %}
 {% endblock %}

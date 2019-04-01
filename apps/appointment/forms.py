@@ -1,10 +1,11 @@
 from django import forms
 from apps.profile.models import Doctor, Department, Patient
-from apps.appointment.models import Appointment, AvailableTime
+from apps.appointment.models import Appointment, AvailableTime, Availablity
 
 from django.db import transaction
 
-from datetime import datetime
+import datetime
+from tempus_dominus.widgets import DatePicker, TimePicker, DateTimePicker
 
 
 class AppointmentForm(forms.ModelForm):
@@ -32,3 +33,19 @@ class AppointmentForm(forms.ModelForm):
         if "appointment_date" in self.data:
             self.fields["appointment_date"].input_formats = ["%B %d, %Y"]
 
+
+class AvailabilityForm(forms.ModelForm):
+    date = forms.DateField(
+        widget=DatePicker(
+            options={
+                "format": "YYYY-MM-DD",
+                # "minDate": (datetime.date.today()).strftime("%Y-%m-%d"),
+                # "collapse": False,
+            },
+            attrs={"append": "fa fa-calendar", "icon_toggle": True},
+        )
+    )
+
+    class Meta:
+        model = Availablity
+        fields = ("date",)

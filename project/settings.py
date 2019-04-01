@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "notifications",
+    "tempus_dominus",
     "crispy_forms",
     "apps.profile",
     "apps.hospital",
@@ -127,6 +128,8 @@ AUTH_USER_MODEL = "profile.User"
 CRISPY_TEMPLATE_PACK = "bootstrap4"
 
 LOGIN_REDIRECT_URL = "/"
+
+TEMPUS_DOMINUS_LOCALIZE = True
 
 
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"

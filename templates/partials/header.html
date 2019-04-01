@@ -13,12 +13,18 @@
     </div>
     {% include "appointment/notification.html" %}
     <ul class="nav justify-content-end">
+    {% if user.is_authenticated %}
+        <li class="nav-item">
+            <a href="{% url 'logout' %}" class="nav-link text-white" href="#">logout</a>
+        </li>
+    {% else %}
         <li class="nav-item">
             <a href="{% url 'login' %}" class="nav-link text-white" href="#">Login</a>
         </li>
         <li class="nav-item">
             <a href="{% url 'register' %}" class="nav-link text-white" href="#">SignUp</a>
         </li>
+    {% endif %}
     </ul>
   </nav>
 
@@ -29,5 +35,3 @@
     <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
   </form>
 </nav>
-
-

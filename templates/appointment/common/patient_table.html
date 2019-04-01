@@ -1,0 +1,60 @@
+<table class="table table-hover">
+  <thead>
+    <tr>
+      <th scope="col">#</th>
+      <th scope="col">Date</th>
+      <th scope="col">status</th>
+      <th scope="col">Start at</th>
+      <th scope="col">End at</th>
+      {% if appointment.status == 3 %}
+      <th scope="col">Handle</th>
+      {% endif %}
+    </tr>
+  </thead>
+  <tbody>
+    <!-- for loop  -->
+    {% for appointment in appointment_list %}
+    <tr>
+      <th scope="row">1</th>
+      <td>{{ appointment.appointment_date }}</td>
+      <td>
+        {% if appointment.status == 3 %}Waiting{% endif %}
+        <!-- cancel  -->
+        {% if appointment.status == 2 %}Canceled{% endif %}
+        <!-- confirm  -->
+        {% if appointment.status == 1 %}Confirmed{% endif %}
+      </td>
+      <td>{{ appointment.timeslot.available_from }}</td>
+      <td>{{ appointment.timeslot.available_to }}</td>
+    {% if appointment.status == 3 %}
+      <td>
+        <div class="dropdown">
+          <button
+            class="btn btn-secondary dropdown-toggle mt-0"
+            type="button"
+            id="dropdownMenu2"
+            data-toggle="dropdown"
+            aria-haspopup="true"
+            aria-expanded="false"
+          >
+            Action
+          </button>
+          <div class="dropdown-menu">
+            {% if appointment.status == 3 %}
+            <a
+              class="dropdown-item action-status"
+              data-status-update-url="{% url 'update-appointment' appointment.id %}"
+              data-status="1"
+              data-appointment-id="{{ appointment.id }}"
+              href="#"
+              >Cancel</a
+            >
+            {% endif %}
+          </div>
+        </div>
+      </td>
+      {% endif %}
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>

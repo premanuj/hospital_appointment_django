@@ -1,0 +1,35 @@
+<div>
+  <button type="button" class="btn btn-primary btn-lg btn-block">
+    Appointment Details
+  </button>
+{% if user.is_doctor %}
+
+  <div id="list-example" class="list-group">
+    <a class="list-group-item list-group-item-action" href="{% url 'list-appointment' 'pending' %}">View Booked Appointments</a>
+    <a class="list-group-item list-group-item-action" href="{% url 'list-appointment' 'confirmed' %}">View Confirmed Appointments</a>
+    <a class="list-group-item list-group-item-action" href="{% url 'list-appointment' 'canceled' %}">View Canceled Appointments</a>  
+  </div>
+  
+  <button type="button" class="btn btn-primary btn-lg btn-block">
+    Your Availabilities
+  </button>
+  <div id="list-example" class="list-group">
+    <a class="list-group-item list-group-item-action" href="{% url 'create-availability' %}">View Availabilities</a>
+    <a class="list-group-item list-group-item-action" href="{% url 'create-availability' %}">Create Availabilities</a>
+  </div>
+  {% elif user.is_patient %}
+  <div id="list-example" class="list-group">
+    <a class="list-group-item list-group-item-action" href="{% url 'create-appointment' %}">Create New Appointments</a>
+    <a class="list-group-item list-group-item-action" href="{% url 'list-appointment' 'pending' %}">View Booked Appointments</a>
+    <a class="list-group-item list-group-item-action" href="{% url 'list-appointment' 'confirmed' %}">View Confirmed Appointments</a>
+    <a class="list-group-item list-group-item-action" href="{% url 'list-appointment' 'canceled' %}">View Canceled Appointments</a>  
+  </div>
+
+</div>
+{% endif %}
+
+
+
+
+
+

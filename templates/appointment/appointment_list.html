@@ -1,0 +1,48 @@
+{% extends 'partials/base.html' %}
+<!-- to load static files like js, css -->
+{% load static %}
+
+<!-- load crispy tag -->
+{% load crispy_forms_tags %}
+<!-- header block -->
+{% block header%} {% include "appointment/notification.html" %} {% endblock %}
+<!-- appointment list -->
+
+{% block main %}
+<!-- length of appointments -->
+{% if appointment_list|length == 0 %}
+<li class="list-group-item ">No appointments available</li>
+{% else %}
+  {% if user.is_doctor %}
+  {% include "appointment/common/doctor_table.html" %}
+  {% elif user.is_patient %}
+  {% include "appointment/common/patient_table.html" %}
+  {% endif %}
+{% endif %}
+<!-- end of if-->
+{% endblock %}
+
+{% block rightbar %}
+{% include "appointment/rightbar.html" %}
+  {% endblock %}
+
+<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+<script>
+  $('.action-status').on('click', function(e) {
+    var appointment_id = $('.action-status').data('appointment-id');
+    var url = $('.action-status').data('status-update-url'); // get the url of the `load_doctors` view
+    var status = $('.action-status').data('status'); // get the selected department ID from the HTML input
+    $.ajax({
+      url: url,
+      data: {
+        status: status,
+        appointment_id: appointment_id
+      },
+      success: function(data) {
+        setTimeout(function() {
+          location.reload();
+        }, 1000);
+      }
+    });
+  });
+</script>

@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.views.generic.base import TemplateView
 from django.views.generic import CreateView, UpdateView, ListView
 from apps.profile.models import Doctor, User, Patient
 from apps.hospital.models import Department
@@ -12,7 +13,7 @@ from apps.appointment.models import (
     MiddlewareNotification,
 )
 from django.urls import reverse_lazy
-from apps.appointment.forms import AppointmentForm
+from apps.appointment.forms import AppointmentForm, AvailabilityForm
 from django.contrib import messages
 from django.db import transaction
 from django.contrib.auth.mixins import (
@@ -24,18 +25,45 @@ from django.contrib.auth.mixins import (
 from notifications.signals import notify
 
 # Create your views here.
+
+
+class AppointmentView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
+    template_name = "appointment/index.html"
+
+    def test_func(self):
+        return self.request.user.is_doctor() or self.request.user.is_patient()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.request.user.is_patient():
+            context["latest_appointment"] = Appointment.objects.all()[:5]
+        if self.request.user.is_doctor():
+            context["latest_appointment"] = Appointment.objects.all()[:5]
+        return context
+
+
 class AppointmentDoctorListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
     model = Appointment
-    template_name = "appointment/doctor_appointment_list.html"
+    template_name = "appointment/appointment_list.html"
     context_object_name = "appointment_list"
     login_url = "/users/login/"
 
     def test_func(self):
-        return self.request.user.is_doctor()
+        return self.request.user.is_doctor() or self.request.user.is_patient()
 
     def get_queryset(self):
-        doctor = Doctor.objects.get(user_id=self.request.user)
-        return Appointment.objects.filter(doctor_id=doctor)
+        status_map = {"confirmed": 1, "canceled": 2, "pending": 3}
+        status = self.kwargs.get("status")
+        print(status, status == "pending")
+
+        status = status_map[status] if status else 1
+        print(status)
+        if self.request.user.is_doctor():
+            doctor = Doctor.objects.get(user_id=self.request.user)
+            return Appointment.objects.filter(doctor_id=doctor, status=status)
+        if self.request.user.is_patient():
+            patient = Patient.objects.get(user_id=self.request.user)
+            return Appointment.objects.filter(patient_id=patient, status=status)
 
 
 class AppointmentPatientListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
@@ -67,13 +95,46 @@ class AppointmentCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView)
 
     @transaction.atomic
     def form_valid(self, form):
-        print("HERE: ")
         available_timeslot_id = form.data.get("available_timeslot_id")
         doctor_id = form.data.get("doctor")
         available_timeslot = AvailableTime.objects.get(pk=available_timeslot_id)
         available_timeslot.status = False
         available_timeslot.save()
-        print("AVAILABLE: ", available_timeslot.timeslot)
+        patient = Patient.objects.get(user=self.request.user.id)
+        form.instance.patient = patient
+        form.instance.timeslot = available_timeslot.timeslot
+        doctor = Doctor.objects.get(user=doctor_id)
+        user = User.objects.get(pk=doctor.user.id)
+        notify.send(patient, recipient=user, verb="appointment created")
+
+        return super().form_valid(form)
+
+
+class AvailabilityCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
+    login_url = "/users/login/"
+    permission_denied_message = "You have no permission to view this page."
+
+    model = Availablity
+    form_class = AvailabilityForm
+    template_name = "appointment/appointment_create.html"
+    success_url = reverse_lazy("create-appointment")
+
+    def test_func(self):
+        return self.request.user.is_doctor()
+
+    def form_invalid(self, form):
+        print(form.data)
+        print(form.errors)
+        messages.error(self.request, "Something went wrong.")
+        return super().form_invalid(form)
+
+    @transaction.atomic
+    def form_valid(self, form):
+        available_timeslot_id = form.data.get("available_timeslot_id")
+        doctor_id = form.data.get("doctor")
+        available_timeslot = AvailableTime.objects.get(pk=available_timeslot_id)
+        available_timeslot.status = False
+        available_timeslot.save()
         patient = Patient.objects.get(user=self.request.user.id)
         form.instance.patient = patient
         form.instance.timeslot = available_timeslot.timeslot
