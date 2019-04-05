@@ -10,11 +10,13 @@
 
 {% block main %}
 <!-- length of appointments -->
-{% if appointment_list|length == 0 %}
-<li class="list-group-item ">No appointments available</li>
-{% else %} {% if user.is_doctor %} {% include
-"appointment/common/doctor_table.html" %} {% elif user.is_patient %} {% include
-"appointment/common/patient_table.html" %} {% endif %} {% endif %}
+{% if available_list|length == 0 %}
+<li class="list-group-item ">No new dates available</li>
+{% else %}
+    {% if user.is_doctor %} 
+        {% include "appointment/common/availability.html" %} 
+    {% endif %} 
+{% endif %}
 <!-- end of if-->
 {% endblock %}
 

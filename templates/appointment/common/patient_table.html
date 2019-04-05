@@ -26,11 +26,11 @@
       </td>
       <td>{{ appointment.timeslot.available_from }}</td>
       <td>{{ appointment.timeslot.available_to }}</td>
-    {% if appointment.status == 3 %}
+      {% if appointment.status == 3 %}
       <td>
         <div class="dropdown">
           <button
-            class="btn btn-secondary dropdown-toggle mt-0"
+            class="btn btn-secondary dropdown-toggle"
             type="button"
             id="dropdownMenu2"
             data-toggle="dropdown"

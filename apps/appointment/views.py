@@ -5,6 +5,8 @@ from apps.profile.models import Doctor, User, Patient
 from apps.hospital.models import Department
 from django.http import JsonResponse
 import datetime
+from django.http import HttpResponse, HttpResponseRedirect
+
 from apps.appointment.models import (
     Appointment,
     TimeSlot,
@@ -29,6 +31,7 @@ from notifications.signals import notify
 
 class AppointmentView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
     template_name = "appointment/index.html"
+    login_url = "/users/login/"
 
     def test_func(self):
         return self.request.user.is_doctor() or self.request.user.is_patient()
@@ -110,14 +113,24 @@ class AppointmentCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView)
         return super().form_valid(form)
 
 
+class AvailabilityListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
+    login_url = "/users/login/"
+    model = Availablity
+    template_name = "appointment/availability_list.html"
+    context_object_name = "available_list"
+
+    def test_func(self):
+        return self.request.user.is_doctor()
+
+
 class AvailabilityCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     login_url = "/users/login/"
     permission_denied_message = "You have no permission to view this page."
 
     model = Availablity
     form_class = AvailabilityForm
-    template_name = "appointment/appointment_create.html"
-    success_url = reverse_lazy("create-appointment")
+    template_name = "appointment/availability_create.html"
+    success_url = reverse_lazy("appointment")
 
     def test_func(self):
         return self.request.user.is_doctor()
@@ -130,19 +143,13 @@ class AvailabilityCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView
 
     @transaction.atomic
     def form_valid(self, form):
-        available_timeslot_id = form.data.get("available_timeslot_id")
-        doctor_id = form.data.get("doctor")
-        available_timeslot = AvailableTime.objects.get(pk=available_timeslot_id)
-        available_timeslot.status = False
-        available_timeslot.save()
-        patient = Patient.objects.get(user=self.request.user.id)
-        form.instance.patient = patient
-        form.instance.timeslot = available_timeslot.timeslot
-        doctor = Doctor.objects.get(user=doctor_id)
-        user = User.objects.get(pk=doctor.user.id)
-        notify.send(patient, recipient=user, verb="appointment created")
-
-        return super().form_valid(form)
+        date = form.cleaned_data["date"]
+        timeslots = form.cleaned_data["time_slot"]
+        doctor = Doctor.objects.get(user=self.request.user.id)
+        availability = Availablity.objects.create(date=date, doctor=doctor)
+        for timeslot in timeslots:
+            AvailableTime.objects.create(timeslot=timeslot, availablity=availability)
+        return HttpResponseRedirect(self.success_url)
 
 
 class AppointmentUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
@@ -174,7 +181,6 @@ def load_doctors(request):
 
 def load_time_slots(requests):
     date = requests.GET.get("date")
-    print(requests.GET)
     pasrsed_date = datetime.datetime.strptime(date, "%B %d, %Y")
     doctor_id = requests.GET.get("doctor")
     available = Availablity.objects.get(date=pasrsed_date, doctor_id=doctor_id)

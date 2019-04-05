@@ -43,7 +43,7 @@
       <td>
         <div class="dropdown">
           <button
-            class="btn btn-secondary dropdown-toggle"
+            class="btn btn-secondary dropdown-toggle mt-0"
             type="button"
             id="dropdownMenu2"
             data-toggle="dropdown"
@@ -80,13 +80,12 @@
 </table>
 {% endif %}
 <!-- end of if-->
-{% endblock %}
-
+{% endblock %} 
 {% block rightbar %}
-{% include "appointment/doctor_rightbar.html" %}
-  {% endblock %}
-
-<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+  {% include "appointment/rightbar.html" %} 
+{% endblock %}
+{% block scripts %}
+{% include "partials/script.html" %} 
 <script>
   $('.action-status').on('click', function(e) {
     var appointment_id = $('.action-status').data('appointment-id');
@@ -106,3 +105,4 @@
     });
   });
 </script>
+{% endblock %}

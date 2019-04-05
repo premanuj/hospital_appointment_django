@@ -1,6 +1,6 @@
 from django import forms
 from apps.profile.models import Doctor, Department, Patient
-from apps.appointment.models import Appointment, AvailableTime, Availablity
+from apps.appointment.models import Appointment, AvailableTime, Availablity, TimeSlot
 
 from django.db import transaction
 
@@ -35,17 +35,13 @@ class AppointmentForm(forms.ModelForm):
 
 
 class AvailabilityForm(forms.ModelForm):
-    date = forms.DateField(
-        widget=DatePicker(
-            options={
-                "format": "YYYY-MM-DD",
-                # "minDate": (datetime.date.today()).strftime("%Y-%m-%d"),
-                # "collapse": False,
-            },
-            attrs={"append": "fa fa-calendar", "icon_toggle": True},
-        )
+    # time_slot = forms.ModelMultipleChoiceField()
+    time_slot = forms.ModelMultipleChoiceField(
+        queryset=TimeSlot.objects.all(), widget=forms.CheckboxSelectMultiple, required=True
     )
 
     class Meta:
         model = Availablity
-        fields = ("date",)
+        fields = ("date", "time_slot")
+        widgets = {"date": forms.DateInput(attrs={"class": "datepicker", "id": "datepicker"})}
+

@@ -1,7 +1,6 @@
 {% extends 'partials/base.html' %}
 <!-- to load static files like js, css -->
 {% load static %}
-{{ form.media }}
 
 <!-- load crispy tag -->
 {% load crispy_forms_tags %}
@@ -18,18 +17,15 @@
       data-doctors-url="{% url 'ajax_load_doctors' %}"
       data-timeslots-url="{% url 'ajax_load_timeslots' %}"
     >
-      {% if messages %} 
-        {% for message in messages %}
-            {{ message }}
-        {% endfor %} 
-      {% endif %} 
-      {% csrf_token %}
+      {% if messages %} {% for message in messages %}
+      {{ message }}
+      {% endfor %} {% endif %} {% csrf_token %}
       <input type="hidden" name="next" value="{{ next }}" />
 
       {{ form | crispy }}
       <div id="time_slots" class="form-group"></div>
 
-      <button type="submit" class="btn btn-primary btn-block">Book</button>
+      <button type="submit" class="btn btn-primary btn-block">Create</button>
     </form>
   </div>
 </div>
@@ -37,60 +33,15 @@
 {% endblock %} 
 
 {% block rightbar %} 
-{% include "appointment/rightbar.html" %} 
+{% include "appointment/rightbar.html" %}
 {%endblock %} 
-
 {% block scripts %}
-
-<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
-
+{% include "partials/script.html" %}
 <script>
-  $(document).ready(function() {
-    console.log('HERE');
-    var url = $('#appointmentForm').attr('data-available-date-url');
-    console.log('CLIECKED');
-    $.ajax({
-      url: url,
-      success: function(data) {
-        $('#id_appointment_date').replaceWith(data); // replace the contents of the doctors input with the data that came from the server
-      }
-    });
-  });
-
-  $('#id_department').change(function() {
-    console.log('DEPARTMENT LOG');
-    var url = $('#appointmentForm').attr('data-doctors-url'); // get the url of the `load_doctors` view
-    var departmentId = $(this).val(); // get the selected department ID from the HTML input
-
-    $.ajax({
-      // initialize an AJAX request
-      url: url, // set the url of the request (= localhost:8000/appointment/ajax/load-doctor/)
-      data: {
-        department: departmentId // add the department id to the GET parameters
-      },
-      success: function(data) {
-        // `data` is the return of the `load_doctors` view function
-        $('#id_doctor').html(data); // replace the contents of the doctors input with the data that came from the server
-      }
-    });
-  });
-
-  $('#id_doctor').change(function() {
-    var url = $('#appointmentForm').attr('data-timeslots-url'); // get the url of the `load_doctors` view
-    var doctorId = $(this).val(); // get the selected doctor ID from the HTML input
-
-    $.ajax({
-      // initialize an AJAX request
-      url: url, // set the url of the request (= localhost:8000/appointment/ajax/load-timeslot/)
-      data: {
-        date: $('#id_appointment_date').val(),
-        doctor: doctorId // add the doctor id to the GET parameters
-      },
-      success: function(data) {
-        // `data` is the return of the `load_timeslot` view function
-        $('#time_slots').html(data); // replace the contents of the timeslots input with the data that came from the server
-      }
-    });
+  $(function() {
+    console.log('here');
+    $('#datepicker').datepicker({ dateFormat: "yy-mm-dd" });
   });
 </script>
+
 {% endblock %}

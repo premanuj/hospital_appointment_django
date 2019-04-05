@@ -41,13 +41,11 @@
 
 {% block scripts %} 
 
-<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+{% include "partials/script.html" %}
 
 <script>
   $(document).ready(function() {
-    console.log("HERE")
     var url = $('#appointmentForm').attr('data-available-date-url');
-  console.log("CLIECKED")
     $.ajax({
       url: url, 
       success: function(data) {
@@ -57,7 +55,6 @@
   });
 
   $('#id_department').change(function() {
-    console.log("DEPARTMENT LOG")
     var url = $('#appointmentForm').attr('data-doctors-url'); // get the url of the `load_doctors` view
     var departmentId = $(this).val(); // get the selected department ID from the HTML input
 
