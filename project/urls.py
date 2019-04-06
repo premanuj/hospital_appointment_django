@@ -27,5 +27,6 @@ urlpatterns = [
     path("", home, name="index"),
     path("users/", include("apps.profile.urls")),
     path("appointments/", include("apps.appointment.urls")),
+    path("paypal/", include("paypal.standard.ipn.urls")),
     path("inbox/notifications/", include(notifications.urls, namespace="notifications")),
 ]

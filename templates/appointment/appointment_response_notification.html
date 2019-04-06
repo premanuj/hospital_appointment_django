@@ -10,15 +10,10 @@
 
 {% block main %}
 <!-- length of appointments -->
-{% if appointment_list|length == 0 %}
-  <li class="list-group-item ">No appointments available</li>
-{% else %} 
-  {% if user.is_doctor %} 
-    {% include "appointment/common/doctor_table.html" %} 
-  {% elif user.is_patient %} 
-    {% include "appointment/common/patient_table.html" %} 
+  {% if user.is_patient %} 
+    <p> Dear <b>{{ user.first_name }} {{ user.last_name }} </b>your appointment for {{ appointment.appointment_date }} had been responsed.  </p>
+    <p> Response status <b> {{ appointment.status }}</b> </p>
   {% endif %} 
-{% endif %}
 <!-- end of if-->
 {% endblock %}
 

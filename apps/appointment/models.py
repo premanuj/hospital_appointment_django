@@ -69,7 +69,7 @@ class Appointment(models.Model):
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE, null=True)
     department = models.ForeignKey(Department, on_delete=models.CASCADE)
     doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE)
-    timeslot = models.OneToOneField(TimeSlot, on_delete=models.CASCADE)
+    timeslot = models.ForeignKey(TimeSlot, on_delete=models.SET_NULL, null=True)
 
 
 # def appointment_created_notification(sender, instance, *args, **kwagrs):

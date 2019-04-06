@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     "apps.profile",
     "apps.hospital",
     "apps.appointment",
+    "paypal.standard.ipn",
 ]
 
 MIDDLEWARE = [
@@ -139,3 +140,5 @@ EMAIL_HOST_PASSWORD = ""  # password
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
+PAYPAL_RECEIVER_EMAIL = " prem.subedi-facilitator@fusemachines.com"
+PAYPAL_TEST = True

@@ -1,3 +1,17 @@
+{% extends 'partials/base.html' %}
+<!-- to load static files like js, css -->
+{% load static %}
+
+<!-- load crispy tag -->
+{% load crispy_forms_tags %}
+<!-- header block -->
+{% block header%} {% include "appointment/notification.html" %} {% endblock %}
+<!-- appointment list -->
+
+{% block main %}
+<!-- length of appointments -->
+{% if user.is_doctor %} 
+
 <table class="table table-hover">
   <thead>
     <tr>
@@ -10,8 +24,6 @@
     </tr>
   </thead>
   <tbody>
-    <!-- for loop  -->
-    {% for appointment in appointment_list %}
     <tr>
       <th scope="row">1</th>
       <td>{{ appointment.appointment_date }}</td>
@@ -49,7 +61,7 @@
             >
             <a
               class="dropdown-item action-status"
-              data-status-update-url="{% url 'update-appointment' appointment.id %}"
+              data-status-update-url="{% url 'update-appointment' %}"
               data-status="1"
               data-appointment-id="{{ appointment.id }}"
               href="#"
@@ -60,6 +72,36 @@
         </div>
       </td>
     </tr>
-    {% endfor %}
   </tbody>
 </table>
+
+{% endif %}
+<!-- end of if-->
+{% endblock %}
+
+{% block rightbar %} 
+{% include "appointment/rightbar.html" %} 
+{%endblock %}
+
+{% block scripts %} 
+{% include "partials/script.html" %}
+<script>
+  $('.action-status').on('click', function(e) {
+    var appointment_id = $('.action-status').data('appointment-id');
+    var url = $('.action-status').data('status-update-url'); // get the url of the `load_doctors` view
+    var status = $('.action-status').data('status'); // get the selected department ID from the HTML input
+    $.ajax({
+      url: url,
+      data: {
+        status: status,
+        appointment_id: appointment_id
+      },
+      success: function(data) {
+        setTimeout(function() {
+          location.reload();
+        }, 1000);
+      }
+    });
+  });
+</script>
+{% endblock %}

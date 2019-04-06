@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.views.generic.base import TemplateView
 from django.views.generic import CreateView, UpdateView, ListView
 from apps.profile.models import Doctor, User, Patient
@@ -6,6 +6,8 @@ from apps.hospital.models import Department
 from django.http import JsonResponse
 import datetime
 from django.http import HttpResponse, HttpResponseRedirect
+from django.views.decorators.csrf import csrf_protect
+
 
 from apps.appointment.models import (
     Appointment,
@@ -56,9 +58,8 @@ class AppointmentDoctorListView(LoginRequiredMixin, UserPassesTestMixin, ListVie
 
     def get_queryset(self):
         status_map = {"confirmed": 1, "canceled": 2, "pending": 3}
-        status = self.kwargs.get("status")
-        print(status, status == "pending")
-
+        print("DATA: ", self.kwargs)
+        status = self.kwargs.get("value")
         status = status_map[status] if status else 1
         print(status)
         if self.request.user.is_doctor():
@@ -108,9 +109,10 @@ class AppointmentCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView)
         form.instance.timeslot = available_timeslot.timeslot
         doctor = Doctor.objects.get(user=doctor_id)
         user = User.objects.get(pk=doctor.user.id)
-        notify.send(patient, recipient=user, verb="appointment created")
+        appointment = super().form_valid(form)
+        notify.send(patient, recipient=user, verb="appointment created", action_object=self.object)
 
-        return super().form_valid(form)
+        return appointment
 
 
 class AvailabilityListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
@@ -156,20 +158,30 @@ class AppointmentUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView)
     login_url = "/users/login/"
     model = Appointment
     context_object_name = "appointment_list"
-    success_url = reverse_lazy("list-doctor-appointment")
     fields = ("status",)
 
     def test_func(self):
         return self.request.user.is_doctor()
 
+    def get_success_url(self, *args, **kwargs):
+        return reverse_lazy("list-appointment", args=["pending"])
+
     @transaction.atomic
     def get_object(self):
-
         appointment_id = self.request.GET["appointment_id"]
         status = self.request.GET["status"]
+        if int(status) == 1:
+            verb = "Appointment Confirmed"
+        if int(status) == 2:
+            verb = "Appointment Canceled"
         appointment = Appointment.objects.get(pk=appointment_id)
         appointment.status = status
         appointment.save()
+        print("PATIENT1>>>>>", appointment.patient.pk)
+        patient = User.objects.get(pk=appointment.patient.pk)
+        print("PATIENT2: ", patient)
+        notify.send(self.request.user, recipient=patient, verb=verb, action_object=appointment)
+        print("HERE....")
         return appointment
 
 
@@ -207,3 +219,36 @@ def load_available_date(request):
     print(availabilities)
 
     return render(request, "appointment/available_date.html", {"availabilities": availabilities})
+
+
+@csrf_protect
+def doctor_response_notification(request):
+    template_name = "appointment/appointment_request_notification.html"
+    slug = request.POST.get("slug")
+    send_by = request.POST.get("send_by")
+    notification = request.POST.get("notification")
+    receiver = User.objects.get(pk=send_by)
+    appointment = Appointment.objects.get(pk=notification)
+    # notify.send(
+    #     request.user, recipient=receiver, verb="appointment created", action_object=appointment
+    # )
+    return render(request, template_name, {"appointment": appointment})
+
+
+def patient_response_notification(request):
+    template_name = "appointment/appointment_response_notification.html"
+    slug = request.POST.get("slug")
+    notification = request.POST.get("notification")
+    response = redirect("notifications:mark_as_read", slug=slug)
+    print(response)
+    appointment = Appointment.objects.get(pk=notification)
+    if appointment.status == 1:
+        appointment.status = "Confirmed"
+
+    if appointment.status == 2:
+        appointment.status = "Canceled"
+
+    # notify.send(
+    #     request.user, recipient=receiver, verb="appointment created", action_object=appointment
+    # )
+    return render(request, template_name, {"appointment": appointment})
