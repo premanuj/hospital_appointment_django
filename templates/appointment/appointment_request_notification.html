@@ -57,6 +57,7 @@
               data-status="2"
               data-appointment-id="{{ appointment.id }}"
               href="#"
+              id = "appointment_cancel"
               >Cancel</a
             >
             <a
@@ -65,9 +66,11 @@
               data-status="1"
               data-appointment-id="{{ appointment.id }}"
               href="#"
+              id = "appointment_confirm"
               >Confirmed</a
             >
             {% endif %}
+            
           </div>
         </div>
       </td>
@@ -86,10 +89,10 @@
 {% block scripts %} 
 {% include "partials/script.html" %}
 <script>
-  $('.action-status').on('click', function(e) {
-    var appointment_id = $('.action-status').data('appointment-id');
-    var url = $('.action-status').data('status-update-url'); // get the url of the `load_doctors` view
-    var status = $('.action-status').data('status'); // get the selected department ID from the HTML input
+  $('#appointment_confirm').on('click', function(e) {
+    var appointment_id = $('#appointment_confirm').data('appointment-id');
+    var url = $('#appointment_confirm').data('status-update-url'); // get the url of the `load_doctors` view
+    var status = $('#appointment_confirm').data('status'); // get the selected department ID from the HTML input
     $.ajax({
       url: url,
       data: {
@@ -100,6 +103,32 @@
         setTimeout(function() {
           location.reload();
         }, 1000);
+      },
+      error: function(data){
+        console.log(data)
+      }
+    });
+  });
+  $('#appointment_cancel').on('click', function(e) {
+    var appointment_id = $('#appointment_cancel').data('appointment-id');
+    var url = $('#appointment_cancel').data('status-update-url'); // get the url of the `load_doctors` view
+    var status = $('#appointment_cancel').data('status'); // get the selected department ID from the HTML input
+    $.ajax({
+      url: url,
+      data: {
+        status: status,
+        appointment_id: appointment_id
+      },
+      success: function(data) {
+        console.log("success")
+        console.log(data)
+        setTimeout(function() {
+          location.reload();
+        }, 1000);
+      },
+      error: function(data){
+        console.log("raise error")
+        console.log(data)
       }
     });
   });

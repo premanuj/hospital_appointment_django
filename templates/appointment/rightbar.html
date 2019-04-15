@@ -24,9 +24,17 @@
     <a class="list-group-item list-group-item-action" href="{% url 'list-appointment' 'confirmed' %}">View Confirmed Appointments</a>
     <a class="list-group-item list-group-item-action" href="{% url 'list-appointment' 'canceled' %}">View Canceled Appointments</a>  
   </div>
+  <button type="button" class="btn btn-primary btn-lg btn-block">
+    Suggest Doctor
+  </button>
+  <div id="list-example" class="list-group">
+  {% for doctor in doctors %}
+    <a class="list-group-item list-group-item-action" href="{% url 'create-appointment' %}">{{ doctor.doctor }} {{ doctor.count }} <small> -{{ doctor.doctor.department }}</small></a> 
+  {% endfor %}
+  </div>
 
-</div>
 {% endif %}
+</div>
 
 
 

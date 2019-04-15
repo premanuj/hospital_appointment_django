@@ -8,29 +8,6 @@ from notifications.signals import notify
 # Create your models here.
 
 
-# class DaySchedule(models.Model):
-#     MONDAY = 1
-#     TUESDAY = 2
-#     WEDNESDAY = 3
-#     THURSDAY = 4
-#     FRIDAY = 5
-#     SATURDAY = 6
-#     SUNDAY = 7
-#     DAYS = (
-#         (MONDAY, "Monday"),
-#         (TUESDAY, "Tuesday"),
-#         (WEDNESDAY, "Wednesday"),
-#         (THURSDAY, "Thursday"),
-#         (FRIDAY, "Friday"),
-#         (SATURDAY, "Saturday"),
-#         (SUNDAY, "Sunday"),
-#     )
-#     doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE)
-#     day = models.PositiveSmallIntegerField(choices=DAYS)
-#     time_slot_from = models.TimeField()
-#     time_slot_to = models.TimeField()
-
-
 class TimeSlot(models.Model):
     available_from = models.TimeField(("Appointment time starts"))
     available_to = models.TimeField(("Appointment time ends"))

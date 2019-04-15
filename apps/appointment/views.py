@@ -7,6 +7,7 @@ from django.http import JsonResponse
 import datetime
 from django.http import HttpResponse, HttpResponseRedirect
 from django.views.decorators.csrf import csrf_protect
+from django.db.models import Count
 
 
 from apps.appointment.models import (
@@ -16,6 +17,7 @@ from apps.appointment.models import (
     AvailableTime,
     MiddlewareNotification,
 )
+from apps.payment.models import Payment
 from django.urls import reverse_lazy
 from apps.appointment.forms import AppointmentForm, AvailabilityForm
 from django.contrib import messages
@@ -42,6 +44,7 @@ class AppointmentView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         if self.request.user.is_patient():
             context["latest_appointment"] = Appointment.objects.all()[:5]
+            context["doctors"] = suggested_doctor(self.request.user)
         if self.request.user.is_doctor():
             context["latest_appointment"] = Appointment.objects.all()[:5]
         return context
@@ -159,6 +162,7 @@ class AppointmentUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView)
     model = Appointment
     context_object_name = "appointment_list"
     fields = ("status",)
+    template_name = "appointment/appointment_update.html"
 
     def test_func(self):
         return self.request.user.is_doctor()
@@ -166,22 +170,24 @@ class AppointmentUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView)
     def get_success_url(self, *args, **kwargs):
         return reverse_lazy("list-appointment", args=["pending"])
 
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, *kwargs)
+
     @transaction.atomic
     def get_object(self):
         appointment_id = self.request.GET["appointment_id"]
         status = self.request.GET["status"]
-        if int(status) == 1:
-            verb = "Appointment Confirmed"
-        if int(status) == 2:
-            verb = "Appointment Canceled"
+        print(status, appointment_id)
         appointment = Appointment.objects.get(pk=appointment_id)
         appointment.status = status
         appointment.save()
-        print("PATIENT1>>>>>", appointment.patient.pk)
         patient = User.objects.get(pk=appointment.patient.pk)
-        print("PATIENT2: ", patient)
+        if int(status) == 1:
+            verb = "Appointment Confirmed"
+            Payment.objects.create(appointment=appointment, patient=patient)
+        if int(status) == 2:
+            verb = "Appointment Canceled"
         notify.send(self.request.user, recipient=patient, verb=verb, action_object=appointment)
-        print("HERE....")
         return appointment
 
 
@@ -252,3 +258,17 @@ def patient_response_notification(request):
     #     request.user, recipient=receiver, verb="appointment created", action_object=appointment
     # )
     return render(request, template_name, {"appointment": appointment})
+
+
+def suggested_doctor(user):
+    from django.db.models import Count
+
+    patient = Patient.objects.get(user=user)
+    appointment = Appointment.objects.filter(patient=patient).distinct("doctor")
+    # appointment = (
+    #     Appointment.objects.filter(patient=patient)
+    #     .values(["doctor", "department"])
+    #     .annotate(count=Count("doctor"))
+    # )
+
+    return appointment

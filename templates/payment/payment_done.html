@@ -1,7 +1,19 @@
-{% extends 'ecommerce_app/base.html' %}
- 
-{% block content %}
+{% extends 'partials/base.html' %}
+
+{% block header %}
+{% include "partials/base.html" %}
+{% endblock header %} 
+
+{% block main %}
  
     <p>Payment done.</p>
  
 {% endblock %}
+
+{% block rightbar %}
+{% include "appointment/rightbar.html" %}
+{% endblock rightbar %}
+
+{% block scripts %}
+{% include "partials/script.html" %}
+{% endblock scripts %}
